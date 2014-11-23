@@ -50,7 +50,7 @@ configFile.withReader {
 
 version = config.mod_version
 group= "io.github.fergoman123.ftnei" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "FergoTools"
+archivesBaseName = "FTNEI"
 
 minecraft {
     version = config.minecraft_version + "-" + config.forge_version
