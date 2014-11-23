@@ -1,0 +1,106 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+    }
+}
+
+repositories{
+maven{
+	name = 'CB Repo'
+	url = "http://chickenbones.net/maven/"
+	}	
+	
+	maven{
+	name = 'Fergoman123s Repo'
+	url = "http://fergoman123.github.io/maven/"
+	}
+}
+
+task("incrementBuildNumber")
+        {
+            doFirst{
+                config.build_number = (config.build_number.toString().toInteger()) + 1
+
+                configFile.withWriter{
+                    config.toProperties().store(it, "")
+                }
+            }
+        }
+
+apply plugin: 'forge'
+
+ext.configFile = file "build.properties"
+
+configFile.withReader {
+    def prop = new Properties()
+    prop.load(it)
+    project.ext.config = new ConfigSlurper().parse prop
+}
+
+version = config.mod_version
+group= "io.github.fergoman123.ftnei" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "FergoTools"
+
+minecraft {
+    version = config.minecraft_version + "-" + config.forge_version
+    runDir = "run/assets"
+}
+
+version = "${config.minecraft_version}-${config.mod_version}.${config.build_number}"
+
+dependencies {
+    compile "io.github.fergoman123:FergoUtil:1.7.10-1.0.6:dev"
+    compile "io.github.fergoman123:FergoTools:1.7.10-2.0.5:dev"
+    compile "codechicken:CodeChickenLib:${config.minecraft_version}-${config.cclVersion}:dev"
+    compile "codechicken:CodeChickenCore:${config.minecraft_version}-${config.cccVersion}:dev"
+    compile "codechicken:NotEnoughItems:${config.minecraft_version}-${config.neiVersion}:dev"
+}
+
+idea{
+	module{
+		downloadSources=true
+	}
+}
+
+version = "${config.minecraft_version}-${config.mod_version}.${config.build_number}"
+
+jar {
+    dependsOn "incrementBuildNumber"
+    classifier = 'universal'
+    version = "${project.version}"
+}
+
+sourceSets{
+            main{
+                java{
+                    srcDir new File(project.projectDir.parentFile, "src")
+                }
+            }
+}
+
+task sourceJar(type: Jar){
+    from sourceSets.main.allSource
+    classifier = 'src'
+    version = "${project.version}"
+}
+
+task devJar(type: Jar){
+    from sourceSets.main.output
+    classifier = 'dev'
+    version = "${project.version}"
+}
+
+artifacts{
+    archives sourceJar, devJar
+}
